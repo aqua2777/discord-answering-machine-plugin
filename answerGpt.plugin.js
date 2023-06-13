@@ -79,7 +79,7 @@ const getNotes = async (chatId) => {
     if(!chat)  return 'nothing';
     let userId = chat.uid;
     if(notes[userId]) return  notes[userId];
-    let res = await fetch(`https://canary.discord.com/api/v9/users/@me/notes/${userId}`, {
+    let res = await fetch(`https://discord.com/api/v9/users/@me/notes/${userId}`, {
         method: 'GET',
         headers: {
             'Authorization': `${token}`,
@@ -93,7 +93,7 @@ const getNotes = async (chatId) => {
 
 const getUser = async () => {
     if(user) return user;
-    let res = await fetch(`https://canary.discord.com/api/v9/@me`, {
+    let res = await fetch(`https://discord.com/api/v9/users/@me`, {
         method: 'GET',
         headers: {
             'Authorization': `${token}`,
@@ -108,7 +108,7 @@ const getUser = async () => {
 async function getChat() {
     let chatId = window.location.href.split('/')[5]
     if(chats[chatId]) return chats[chatId];
-    let res = await fetch('https://canary.discord.com/api/v9/channels/' + chatId, {
+    let res = await fetch('https://discord.com/api/v9/channels/' + chatId, {
         method: 'GET',
         headers: {
             'Authorization': `${token}`,
@@ -226,7 +226,7 @@ function removeTextArea() {
 async function sendMessage() {
     let channel = window.location.href.split('/')[5];
     let content = document.querySelector('#textarea textarea').value;
-    await fetch(`https://canary.discord.com/api/v9/channels/${channel}/messages`, {
+    await fetch(`https://discord.com/api/v9/channels/${channel}/messages`, {
         method: 'POST',
         headers: {
             'Authorization': `${token}`,
