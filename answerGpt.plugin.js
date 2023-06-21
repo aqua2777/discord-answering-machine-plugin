@@ -10,51 +10,59 @@ let gptLogo = `<svg width="24" xmlns="http://www.w3.org/2000/svg" viewBox="300 3
 let buttonString = `<button id="gpt" aria-haspopup="dialog" aria-label="generate answer" type="button" class="button-ejjZWC lookBlank-FgPMy6 colorBrand-2M3O3N grow-2T4nbg"><div class="contents-3NembX button-2fCJ0o button-3BaQ4X"><div class="buttonWrapper-3YFQGJ" style="opacity: 1; transform: none;">${gptLogo}</div></div></button>`
 let cross = `<svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 24 24" width="512" height="512"><path d="m12,0C5.383,0,0,5.383,0,12s5.383,12,12,12,12-5.383,12-12S18.617,0,12,0Zm3.707,14.293c.391.391.391,1.023,0,1.414-.195.195-.451.293-.707.293s-.512-.098-.707-.293l-2.293-2.293-2.293,2.293c-.195.195-.451.293-.707.293s-.512-.098-.707-.293c-.391-.391-.391-1.023,0-1.414l2.293-2.293-2.293-2.293c-.391-.391-.391-1.023,0-1.414s1.023-.391,1.414,0l2.293,2.293,2.293-2.293c.391-.391,1.023-.391,1.414,0s.391,1.023,0,1.414l-2.293,2.293,2.293,2.293Z"/></svg>`
 
-const apis = [
-    'your api key'
-]
+const apis = ["your api key"]
 let token
-let notes = {};
-let chats = {};
-let user;
+let notes = {}
+let chats = {}
+let user
 
 const getToken = () => {
-    let token = (webpackChunkdiscord_app.push([[''],{},e=>{m=[];for(let c in e.c)m.push(e.c[c])}]),m).find(m=>m?.exports?.default?.getToken!==void 0).exports.default.getToken()
-    return token;
+  let token = (webpackChunkdiscord_app.push([
+    [""],
+    {},
+    e => {
+      m = []
+      for (let c in e.c) m.push(e.c[c])
+    },
+  ]),
+  m)
+    .find(m => m?.exports?.default?.getToken !== void 0)
+    .exports.default.getToken()
+  return token
 }
 
 const prepareMessages = () => {
-    let messages = document.querySelectorAll(".markup-eYLPri.messageContent-2t3eCI");
-    let messagesArray = [];
-    messages.forEach(message => {
-        if(!message.parentElement.childNodes[1]) return;
-        let author = message.parentElement.childNodes[1].innerText.split('\n')[0]
-        let content = message.innerText;
-        messagesArray.push((author === user.global_name ? 'You' : 'Interlocutor') + ': ' + content);;
-    })
-    messagesArray = messagesArray.reverse();
-    messagesArray = messagesArray.splice(0, 15)
-    let state = messagesArray[0].split(' ')[0];
-    let lastMessages = [];
-    while(messagesArray[0] && messagesArray[0].split(' ')[0] == state) {
-        lastMessages.push(messagesArray.shift());
-    }
+  let messages = document.querySelectorAll(".markup-eYLPri.messageContent-2t3eCI")
+  let messagesArray = []
+  messages.forEach(message => {
+    if (!message.parentElement.childNodes[1]) return
+    let author = message.parentElement.childNodes[1].innerText.split("\n")[0]
+    let content = message.innerText
+    messagesArray.push((author === user.global_name ? "You" : "Interlocutor") + ": " + content)
+  })
+  messagesArray = messagesArray.reverse()
+  messagesArray = messagesArray.splice(0, 15)
+  let state = messagesArray[0].split(" ")[0]
+  let lastMessages = []
+  while (messagesArray[0] && messagesArray[0].split(" ")[0] == state) {
+    lastMessages.push(messagesArray.shift())
+  }
 
-    lastMessages = lastMessages.reverse().join('\n');
-    messagesArray = messagesArray.reverse().join('\n');
+  lastMessages = lastMessages.reverse().join("\n")
+  messagesArray = messagesArray.reverse().join("\n")
 
-    return {
-        messages: messagesArray,
-        lastMessages
-    }
+  return {
+    messages: messagesArray,
+    lastMessages,
+  }
 }
 
 const generatePrompt = async () => {
-    let { messages, lastMessages } = prepareMessages();
+  let { messages, lastMessages } = prepareMessages()
 
-    let note = await getNotes(window.location.href.split('/')[5]);
+  let note = await getNotes(window.location.href.split("/")[5])
 
-return `Your name is Руслан. You are 19 years old.
+  return `Your name is Руслан. You are 19 years old.
 You are funny, sweet and kind.
 You communicate with your interlocutor in the discord.
 Your nickname in discord is aqua.
@@ -74,202 +82,199 @@ Don't ask too many questions.
 Try to answer briefly.`
 }
 
-const getNotes = async (chatId) => {
-    let chat = await getChat();
-    if(!chat)  return 'nothing';
-    let userId = chat.uid;
-    if(notes[userId]) return  notes[userId];
-    let res = await fetch(`https://discord.com/api/v9/users/@me/notes/${userId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    res = await res.json();
-    notes[userId] = res.note;
-    return res.note;
+const getNotes = async chatId => {
+  let chat = await getChat()
+  if (!chat) return "nothing"
+  let userId = chat.uid
+  if (notes[userId]) return notes[userId]
+  let res = await fetch(`https://discord.com/api/v9/users/@me/notes/${userId}`, {
+    method: "GET",
+    headers: {
+      Authorization: `${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+  res = await res.json()
+  notes[userId] = res.note
+  return res.note
 }
 
 const getUser = async () => {
-    if(user) return user;
-    let res = await fetch(`https://discord.com/api/v9/users/@me`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
-    res = await res.json();
-    user = res;
-    return res;
+  if (user) return user
+  let res = await fetch(`https://discord.com/api/v9/users/@me`, {
+    method: "GET",
+    headers: {
+      Authorization: `${token}`,
+      "Content-Type": "application/json",
+    },
+  })
+  res = await res.json()
+  user = res
+  return res
 }
 
 async function getChat() {
-    let chatId = window.location.href.split('/')[5]
-    if(chats[chatId]) return chats[chatId];
-    let res = await fetch('https://discord.com/api/v9/channels/' + chatId, {
-        method: 'GET',
-        headers: {
-            'Authorization': `${token}`,
-            'Content-Type': 'application/json'
-        }
-    })
+  let chatId = window.location.href.split("/")[5]
+  if (chats[chatId]) return chats[chatId]
+  let res = await fetch("https://discord.com/api/v9/channels/" + chatId, {
+    method: "GET",
+    headers: {
+      Authorization: `${token}`,
+      "Content-Type": "application/json",
+    },
+  })
 
-    res = await res.json();
-    if(!res.recipients) {
-        chats[chatId] = false;
-        return false;
-    }
-    res.uid = res.recipients[0].id
-    chats[chatId] = res;
-    return res;
-} 
-
-let id = 0;
-
-async function generateAnswer() {
-    let apiKey = apis[id % apis.length];
-    id++;
-    let prompt = await generatePrompt();
-    let res = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
-            messages: [
-                {
-                    role: 'user',
-                    content: prompt
-                }
-            ]
-        })
-    })
-    res = await res.json();
-    let answer = res.choices[0].message.content;
-
-    if( answer.includes('Interlocutor:')) {
-        answer =  answer.split('\n').filter(a => !a.includes('Interlocutor:')).join('\n')
-    }
-
-    answer.replace('You:', '')
-    if(answer.includes('You:')) {
-        answer = answer.replaceAll('You:', '\n')
-    }
-
-    if( answer.includes('] : '))
-        answer =  answer.split('] : ')[1]
-    else
-    if( answer.includes(']: '))
-        answer =  answer.split(']: ')[1]
-    else
-    if( answer.includes(': '))
-        answer =  answer.split(':')[1]
-    if( answer.includes(']'))
-        answer =  answer.split(']')[1]
-    answer = answer.trim();
-    res.choices[0].message.content = answer;
-
-    return res.choices[0].message.content;
+  res = await res.json()
+  if (!res.recipients) {
+    chats[chatId] = false
+    return false
+  }
+  res.uid = res.recipients[0].id
+  chats[chatId] = res
+  return res
 }
 
+let id = 0
+
+async function generateAnswer() {
+  let apiKey = apis[id % apis.length]
+  id++
+  let prompt = await generatePrompt()
+  let res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    }),
+  })
+  res = await res.json()
+  let answer = res.choices[0].message.content
+
+  if (answer.includes("Interlocutor:")) {
+    answer = answer
+      .split("\n")
+      .filter(a => !a.includes("Interlocutor:"))
+      .join("\n")
+  }
+
+  answer.replace("You:", "")
+  if (answer.includes("You:")) {
+    answer = answer.replaceAll("You:", "\n")
+  }
+
+  if (answer.includes("] : ")) answer = answer.split("] : ")[1]
+  else if (answer.includes("]: ")) answer = answer.split("]: ")[1]
+  else if (answer.includes(": ")) answer = answer.split(":")[1]
+  if (answer.includes("]")) answer = answer.split("]")[1]
+  answer = answer.trim()
+  res.choices[0].message.content = answer
+
+  return res.choices[0].message.content
+}
 
 function createElementFromString(html) {
-    var template = document.createElement('template');
-    html = html.trim();
-    template.innerHTML = html;
-    return template.content.firstChild;
+  var template = document.createElement("template")
+  html = html.trim()
+  template.innerHTML = html
+  return template.content.firstChild
 }
 
 function addTextArea() {
-    let element = document.querySelector('.channelTextArea-1FufC0.channelTextArea-1VQBuV');
-    console.log(element)
-    let div = document.createElement('div');
-    div.id = 'textarea'
-    div.style = 'padding: 10px; display: flex;'
-    let textarea = document.createElement('textarea');
-    textarea.style = 'width: 100%; background: #0000; border: none; color: white; resize: none; overflow-y:hidden; font-size: 14px;'
-    textarea.style.height = textarea.scrollHeight + 'px'
-    div.appendChild(textarea);
-    let crossBtn = createElementFromString(cross);
-    crossBtn.classList.add('crossBtn')
-    crossBtn.addEventListener('click', removeTextArea)
-    div.appendChild(crossBtn);
-    element.prepend(div);
+  let element = document.querySelector(".channelTextArea-1FufC0.channelTextArea-1VQBuV")
+  console.log(element)
+  let div = document.createElement("div")
+  div.id = "textarea"
+  div.style = "padding: 10px; display: flex;"
+  let textarea = document.createElement("textarea")
+  textarea.style = "width: 100%; background: #0000; border: none; color: white; resize: none; overflow-y:hidden; font-size: 14px;"
+  textarea.style.height = textarea.scrollHeight + "px"
+  div.appendChild(textarea)
+  let crossBtn = createElementFromString(cross)
+  crossBtn.classList.add("crossBtn")
+  crossBtn.addEventListener("click", removeTextArea)
+  div.appendChild(crossBtn)
+  element.prepend(div)
 
-    textarea.addEventListener("input", OnInput, false);
+  textarea.addEventListener("input", OnInput, false)
 
-    function OnInput() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    }
+  function OnInput() {
+    this.style.height = "auto"
+    this.style.height = this.scrollHeight + "px"
+  }
 
-    return textarea;
+  return textarea
 }
 
 async function enter(e) {
-    if (e.key === 'Enter') {
-        console.log(e)
-        sendMessage()
-        removeTextArea()
-    }
+  if (e.key === "Enter") {
+    console.log(e)
+    sendMessage()
+    removeTextArea()
+  }
 }
 
 function removeTextArea() {
-    let element = document.querySelector('#textarea');
-    element.remove();
+  let element = document.querySelector("#textarea")
+  element.remove()
 }
 
 async function sendMessage() {
-    let channel = window.location.href.split('/')[5];
-    let content = document.querySelector('#textarea textarea').value;
-    await fetch(`https://discord.com/api/v9/channels/${channel}/messages`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            content
-        })
-    })
+  let channel = window.location.href.split("/")[5]
+  let content = document.querySelector("#textarea textarea").value
+  await fetch(`https://discord.com/api/v9/channels/${channel}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      content,
+    }),
+  })
 }
 
 module.exports = class AnswerGpt {
+  observer() {
+    let gpt = document.getElementById("gpt")
+    if (!gpt) {
+      let chatButtons = document.querySelector(".buttons-uaqb-5")
+      if (!chatButtons) return
+      let gptButton = createElementFromString(buttonString)
+      chatButtons.prepend(gptButton)
 
-    observer() {
-        let gpt = document.getElementById("gpt");
-        if(!gpt) {
-            let chatButtons = document.querySelector(".buttons-uaqb-5");
-            if(!chatButtons) return;
-            let gptButton = createElementFromString(buttonString);
-            chatButtons.prepend(gptButton);
+      let gpt = document.getElementById("gpt")
 
-            let gpt = document.getElementById("gpt");
-
-            gpt.addEventListener("click", async () => {
-                let textarea = document.querySelector('#textarea');
-                if(textarea) return;
-                BdApi.showToast("Началась генерация ответа...", {type: "info"});
-                let answer = await generateAnswer();
-                textarea = addTextArea();
-                textarea.value = answer;
-                textarea.style.height = 'auto';
-                textarea.style.height = (textarea.scrollHeight) + 'px';
-                BdApi.showToast("Ответ сгенерирован", {type: "success"});
-                //document.querySelector('.markup-eYLPri.editor-H2NA06.slateTextArea-27tjG0.fontSize16Padding-XoMpjI').firstChild.firstChild.firstChild.firstChild.innerText = answer;
-            })
-        }
+      gpt.addEventListener("click", async () => {
+        let textarea = document.querySelector("#textarea")
+        if (textarea) return
+        BdApi.showToast("Началась генерация ответа...", { type: "info" })
+        let answer = await generateAnswer()
+        textarea = addTextArea()
+        textarea.value = answer
+        textarea.style.height = "auto"
+        textarea.style.height = textarea.scrollHeight + "px"
+        BdApi.showToast("Ответ сгенерирован", { type: "success" })
+        //document.querySelector('.markup-eYLPri.editor-H2NA06.slateTextArea-27tjG0.fontSize16Padding-XoMpjI').firstChild.firstChild.firstChild.firstChild.innerText = answer;
+      })
     }
+  }
 
-    start() {
-        document.querySelector('.appMount-2yBXZl').addEventListener('keydown', enter)
-        token = getToken();
-        getUser();
-        BdApi.injectCSS("answerGpt", `
+  start() {
+    document.querySelector(".appMount-2yBXZl").addEventListener("keydown", enter)
+    token = getToken()
+    getUser()
+    BdApi.injectCSS(
+      "answerGpt",
+      `
 
         .crossBtn {
             fill: #fff8;
@@ -282,12 +287,13 @@ module.exports = class AnswerGpt {
 
         .crossBtn:hover {
             fill: #fff;
-        }`);
-    } 
+        }`,
+    )
+  }
 
-    stop() {
-        let gpt = document.getElementById("gpt");
-        if(gpt) gpt.remove();
-        document.querySelector('.appMount-2yBXZl').removeEventListener('keydown', enter)
-    }
+  stop() {
+    let gpt = document.getElementById("gpt")
+    if (gpt) gpt.remove()
+    document.querySelector(".appMount-2yBXZl").removeEventListener("keydown", enter)
+  }
 }
